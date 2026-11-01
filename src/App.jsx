@@ -6,38 +6,26 @@ const revealPhase = (progress, start, span) => clamp01((progress - start) / span
 
 function App() {
   const showcaseCards = [
-    { id: 'a', image: '/instagram-karusell/a.jpeg', alt: 'Showcase slide a' },
-    { id: 'b', image: '/instagram-karusell/b.jpeg', alt: 'Showcase slide b' },
-    { id: 'c', image: '/instagram-karusell/c.jpeg', alt: 'Showcase slide c' },
-    { id: 'd', image: '/instagram-karusell/d.jpeg', alt: 'Showcase slide d' },
-    { id: 'e', image: '/instagram-karusell/e.jpeg', alt: 'Showcase slide e' },
-    { id: 'f', image: '/instagram-karusell/f.jpeg', alt: 'Showcase slide f' },
-    { id: 'h', image: '/instagram-karusell/h.jpeg', alt: 'Showcase slide h' },
-    { id: 'i', image: '/instagram-karusell/i.jpeg', alt: 'Showcase slide i' },
-    { id: 'j', image: '/instagram-karusell/j.jpeg', alt: 'Showcase slide j' },
-    { id: 'k', image: '/instagram-karusell/k.jpeg', alt: 'Showcase slide k' },
-    { id: 'l', image: '/instagram-karusell/l.jpeg', alt: 'Showcase slide l' },
-    { id: 'm', image: '/instagram-karusell/m.jpeg', alt: 'Showcase slide m' },
-    { id: 'n', image: '/instagram-karusell/n.jpeg', alt: 'Showcase slide n' },
-    { id: 'o', image: '/instagram-karusell/o.jpeg', alt: 'Showcase slide o' },
-    { id: 'p', image: '/instagram-karusell/p.jpeg', alt: 'Showcase slide p' },
-    { id: 'q', image: '/instagram-karusell/q.jpeg', alt: 'Showcase slide q' },
-    { id: 'r', image: '/instagram-karusell/r.jpeg', alt: 'Showcase slide r' },
-    { id: 's', image: '/instagram-karusell/s.jpeg', alt: 'Showcase slide s' },
+    { id: '3976', image: '/instagram-karusell/IMG_3976.jpg', alt: 'Instagram carousel photo 3976' },
+    { id: '3977', image: '/instagram-karusell/IMG_3977.jpg', alt: 'Instagram carousel photo 3977' },
+    { id: '3978', image: '/instagram-karusell/IMG_3978.jpg', alt: 'Instagram carousel photo 3978' },
+    { id: '3980', image: '/instagram-karusell/IMG_3980.jpg', alt: 'Instagram carousel photo 3980' },
+    { id: '3982', image: '/instagram-karusell/IMG_3982.jpg', alt: 'Instagram carousel photo 3982' },
+    { id: '3981', image: '/instagram-karusell/IMG_3981.jpg', alt: 'Instagram carousel photo 3981' },
+    { id: '3983', image: '/instagram-karusell/IMG_3983.jpg', alt: 'Instagram carousel photo 3983' },
+    { id: '3984', image: '/instagram-karusell/IMG_3984.jpg', alt: 'Instagram carousel photo 3984' },
+    { id: '3986', image: '/instagram-karusell/IMG_3986.jpg', alt: 'Instagram carousel photo 3986' },
+    { id: '3985', image: '/instagram-karusell/IMG_3985.jpg', alt: 'Instagram carousel photo 3985' },
+    { id: '3987', image: '/instagram-karusell/IMG_3987.jpg', alt: 'Instagram carousel photo 3987' },
   ]
-  const finalMailRepeatCount = 12
-
   const audioRef = useRef(null)
-  const presskitTitleRef = useRef(null)
   const presskitSectionRef = useRef(null)
-  const [presskitMediaWidth, setPresskitMediaWidth] = useState(null)
   const showcaseCarouselRef = useRef(null)
   const showcaseDragRef = useRef(null)
   const showcasePointerRef = useRef(null)
   const showcasePauseUntilRef = useRef(0)
   const showcaseLoopRef = useRef(null)
-  const [copiedContact, setCopiedContact] = useState(null)
-  const copiedTimeoutRef = useRef(null)
+  const suppressShowcaseClickRef = useRef(false)
   const [presskitSectionReveal, setPresskitSectionReveal] = useState(0)
 
   const startAudio = () => {
@@ -69,9 +57,9 @@ function App() {
       pointerId: event.pointerId,
       startX: event.clientX,
       scrollLeft: carousel.scrollLeft,
+      moved: false,
     }
     carousel.setPointerCapture(event.pointerId)
-    event.preventDefault()
   }
 
   const moveShowcaseDrag = (event) => {
@@ -82,6 +70,7 @@ function App() {
     const drag = showcaseDragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
 
+    if (Math.abs(event.clientX - drag.startX) > 5) drag.moved = true
     event.currentTarget.scrollLeft = drag.scrollLeft + drag.startX - event.clientX
   }
 
@@ -92,8 +81,17 @@ function App() {
     }
 
     if (showcaseDragRef.current?.pointerId === event.pointerId) {
+      suppressShowcaseClickRef.current = showcaseDragRef.current.moved
       showcaseDragRef.current = null
     }
+  }
+
+  const handleShowcaseClick = (event) => {
+    if (!suppressShowcaseClickRef.current) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    suppressShowcaseClickRef.current = false
   }
 
   const normalizeShowcaseScroll = (carousel) => {
@@ -113,23 +111,6 @@ function App() {
     event.preventDefault()
   }
 
-  const copyContact = async (key, value) => {
-    try {
-      await navigator.clipboard.writeText(value)
-      setCopiedContact(key)
-
-      if (copiedTimeoutRef.current !== null) {
-        window.clearTimeout(copiedTimeoutRef.current)
-      }
-
-      copiedTimeoutRef.current = window.setTimeout(() => {
-        setCopiedContact((prev) => (prev === key ? null : prev))
-      }, 1500)
-    } catch {
-      setCopiedContact(null)
-    }
-  }
-
   useEffect(() => {
     startAudio()
 
@@ -145,23 +126,6 @@ function App() {
       window.removeEventListener('keydown', unlockAudio)
       window.removeEventListener('visibilitychange', unlockAudio)
     }
-  }, [])
-
-  useEffect(() => {
-    const syncPresskitWidth = () => {
-      const title = presskitTitleRef.current
-      if (!title) return
-      setPresskitMediaWidth(title.getBoundingClientRect().width)
-    }
-
-    syncPresskitWidth()
-    const title = presskitTitleRef.current
-    if (!title) return
-
-    const resizeObserver = new ResizeObserver(syncPresskitWidth)
-    resizeObserver.observe(title)
-
-    return () => resizeObserver.disconnect()
   }, [])
 
   useEffect(() => {
@@ -236,14 +200,6 @@ function App() {
     }
   }, [showcaseCards.length])
 
-  useEffect(() => {
-    return () => {
-      if (copiedTimeoutRef.current !== null) {
-        window.clearTimeout(copiedTimeoutRef.current)
-      }
-    }
-  }, [])
-
   const presskitTitleReveal = revealPhase(presskitSectionReveal, 0.02, 0.12)
   const presskitImageReveal = revealPhase(presskitSectionReveal, 0.22, 0.28)
   const presskitCopyReveal = revealPhase(presskitSectionReveal, 0.3, 0.22)
@@ -254,7 +210,6 @@ function App() {
   }
 
   const presskitImageStyle = {
-    ...(presskitMediaWidth ? { width: `${presskitMediaWidth}px` } : {}),
     opacity: presskitImageReveal,
     transform: `translateY(${(1 - presskitImageReveal) * 24}px)`,
   }
@@ -332,10 +287,9 @@ function App() {
           <aside className="third-static">
             <div className="third-static-inner">
               <h2
-                ref={presskitTitleRef}
                 style={presskitTitleStyle}
               >
-                Precious presskit
+                about us
               </h2>
               <div
                 className="presskit-mini-video-wrap"
@@ -344,19 +298,30 @@ function App() {
               >
                 <img className="presskit-mini-video" src="/P1090348%20(1).jpg" alt="Precious presskit preview" loading="lazy" />
               </div>
+              <div
+                className="presskit-mini-video-wrap presskit-secondary-image-wrap"
+                aria-label="Presskit event photo"
+                style={presskitImageStyle}
+              >
+                <img className="presskit-mini-video" src="/P1070777.JPEG" alt="Precious Kargo event" loading="lazy" />
+              </div>
             </div>
           </aside>
           <div
             className="third-scroll"
             style={presskitCopyStyle}
           >
-            <p>
-               Precious Kargo is a multidisciplinary creative collective operating at the intersection of music, art, and club culture. As producers and DJs, they create high-energy electronic soundscapes where techno, afro house, and melodic club music merge into a contemporary, genre-blurring sonic identity. Influences from breaks, garage, and underground rave culture are woven together with a dreamy, hypnotic, and rhythm-driven atmosphere shaped by the experimental spirit of Stockholm’s underground scene. Every set evolves into a dynamic experience where music, energy and fun remain at the center.
-
-Beyond music, Precious Kargo's creative practice extends into the production and curation of cultural and club events, as well as styling and sewing. Through these different forms of expression, the collective continues to explore the relationship between sound, visual identity, and community, creating spaces and experiences rooted in collaboration and experimentation. 
-
-            </p>
-
+            <div className="presskit-copy-block">
+              <p>
+                Precious Kargo is a multidisciplinary creative collective operating at the intersection of music, art, and club culture. As producers and DJs, they create high-energy electronic soundscapes where techno, afro house, and melodic club music merge into a contemporary, genre-blurring sonic identity. Influences from breaks, garage, and underground rave culture are woven together with a dreamy, hypnotic, and rhythm-driven atmosphere shaped by the experimental spirit of Stockholm’s underground scene. Every set evolves into a dynamic experience where music, energy and fun remain at the center.
+              </p>
+            </div>
+            <img className="presskit-mobile-image" src="/P1070777.JPEG" alt="Precious Kargo event" loading="lazy" />
+            <div className="presskit-copy-block">
+              <p>
+                Beyond music, Precious Kargo's creative practice extends into the production and curation of cultural and club events, as well as styling and sewing. Through these different forms of expression, the collective continues to explore the relationship between sound, visual identity, and community, creating spaces and experiences rooted in collaboration and experimentation.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -374,14 +339,24 @@ Beyond music, Precious Kargo's creative practice extends into the production and
             onPointerUp={endShowcaseDrag}
             onPointerCancel={endShowcaseDrag}
             onLostPointerCapture={endShowcaseDrag}
+            onClickCapture={handleShowcaseClick}
             onScroll={(event) => normalizeShowcaseScroll(event.currentTarget)}
             onWheel={handleShowcaseWheel}
           >
             {Array.from({ length: 3 }, (_, copyIndex) =>
               showcaseCards.map((card) => (
-                <div className="showcase-card" key={`${copyIndex}-${card.id}`} aria-hidden={copyIndex !== 1}>
-                  <img className="showcase-image" src={card.image} alt={copyIndex === 1 ? card.alt : ''} loading="lazy" />
-                </div>
+                <a
+                  className="showcase-card"
+                  key={`${copyIndex}-${card.id}`}
+                  href="https://www.instagram.com/preciouskargo_"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={copyIndex === 1 ? `View ${card.alt} on Instagram` : undefined}
+                  aria-hidden={copyIndex !== 1}
+                  tabIndex={copyIndex === 1 ? 0 : -1}
+                >
+                  <img className="showcase-image" src={card.image} alt={copyIndex === 1 ? card.alt : ''} loading="lazy" draggable="false" />
+                </a>
               )),
             )}
           </div>
@@ -400,64 +375,19 @@ Beyond music, Precious Kargo's creative practice extends into the production and
           />
         </div>
         <div className="final-section-inner">
-          <div className="final-top-row">
-            <p className="final-kicker">Design & sound collective</p>
-            <a
-              className="final-mail-link"
-              href="mailto:preciouskargo@gmail.com"
-              aria-label="Email Precious Kargo"
-            >
-              <span className="final-mail-marquee" aria-hidden="true">
-                <span className="final-mail-track">
-                  {Array.from({ length: finalMailRepeatCount }).map((_, index) => (
-                    <span key={`mail-track-a-${index}`}>SAY HELLO TO</span>
-                  ))}
-                </span>
-                <span className="final-mail-track" aria-hidden="true">
-                  {Array.from({ length: finalMailRepeatCount }).map((_, index) => (
-                    <span key={`mail-track-b-${index}`}>SAY HELLO TO</span>
-                  ))}
-                </span>
+          <div className="final-hello-line" aria-label="Say hello to">
+            <span className="final-hello-marquee" aria-hidden="true">
+              <span className="final-hello-track">
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <span key={`hello-track-a-${index}`}>SAY HELLO TO</span>
+                ))}
               </span>
-            </a>
-          </div>
-          <div className="final-middle-row">
-            <div className="final-statement" aria-label="Contact labels">
-              <p
-                className={`final-statement-item ${copiedContact === 'instagram' ? 'is-copied' : ''}`}
-                role="button"
-                tabIndex={0}
-                onClick={() => void copyContact('instagram', '@preciouskargo_')}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    void copyContact('instagram', '@preciouskargo_')
-                  }
-                }}
-                aria-label="Instagram, click to copy @preciouskargo_"
-              >
-                <span className="final-statement-label">Instagram</span>
-                <span className="final-statement-hover-mail">@preciouskargo_</span>
-                <span className="final-copy-status">{copiedContact === 'instagram' ? 'Copied!' : 'Click to copy'}</span>
-              </p>
-              <p
-                className={`final-statement-item ${copiedContact === 'mail' ? 'is-copied' : ''}`}
-                role="button"
-                tabIndex={0}
-                onClick={() => void copyContact('mail', 'PreciousKargo@gmail.com')}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    void copyContact('mail', 'PreciousKargo@gmail.com')
-                  }
-                }}
-                aria-label="Mail, click to copy PreciousKargo@gmail.com"
-              >
-                <span className="final-statement-label">Mail</span>
-                <span className="final-statement-hover-mail">PreciousKargo@gmail.com</span>
-                <span className="final-copy-status">{copiedContact === 'mail' ? 'Copied!' : 'Click to copy'}</span>
-              </p>
-            </div>
+              <span className="final-hello-track" aria-hidden="true">
+                {Array.from({ length: 12 }).map((_, index) => (
+                  <span key={`hello-track-b-${index}`}>SAY HELLO TO</span>
+                ))}
+              </span>
+            </span>
           </div>
           <div className="final-brand-line" aria-label="Precious Kargo marquee">
             <span className="final-brand-marquee" aria-hidden="true">

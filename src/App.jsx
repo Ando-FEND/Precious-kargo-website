@@ -22,8 +22,6 @@ function App() {
   const presskitSectionRef = useRef(null)
   const showcaseCarouselRef = useRef(null)
   const showcaseDragRef = useRef(null)
-  const showcasePointerRef = useRef(null)
-  const showcasePauseUntilRef = useRef(0)
   const showcaseLoopRef = useRef(null)
   const suppressShowcaseClickRef = useRef(false)
   const [presskitSectionReveal, setPresskitSectionReveal] = useState(0)
@@ -47,9 +45,6 @@ function App() {
   }
 
   const startShowcaseDrag = (event) => {
-    showcasePointerRef.current = event.pointerId
-    showcasePauseUntilRef.current = Number.POSITIVE_INFINITY
-
     if (event.pointerType !== 'mouse' || event.button !== 0) return
 
     const carousel = event.currentTarget
@@ -63,10 +58,6 @@ function App() {
   }
 
   const moveShowcaseDrag = (event) => {
-    if (showcasePointerRef.current === event.pointerId) {
-      showcasePauseUntilRef.current = Number.POSITIVE_INFINITY
-    }
-
     const drag = showcaseDragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
 
@@ -75,11 +66,6 @@ function App() {
   }
 
   const endShowcaseDrag = (event) => {
-    if (showcasePointerRef.current === event.pointerId) {
-      showcasePointerRef.current = null
-      showcasePauseUntilRef.current = performance.now() + 2500
-    }
-
     if (showcaseDragRef.current?.pointerId === event.pointerId) {
       suppressShowcaseClickRef.current = showcaseDragRef.current.moved
       showcaseDragRef.current = null
@@ -105,7 +91,6 @@ function App() {
   }
 
   const handleShowcaseWheel = (event) => {
-    showcasePauseUntilRef.current = performance.now() + 2500
     const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY
     event.currentTarget.scrollLeft += delta
     event.preventDefault()
@@ -169,33 +154,14 @@ function App() {
         : 0
       const start = paddingLeft + width
 
-      showcaseLoopRef.current = { start, end: start + width, width, stride: cardWidth + gap }
+      showcaseLoopRef.current = { start, end: start + width, width }
       carousel.scrollLeft = start + (previousLoop ? (progress / previousLoop.width) * width : 0)
     }
 
     measureLoop()
     window.addEventListener('resize', measureLoop)
 
-    let animationFrameId = 0
-    let previousTime = performance.now()
-    const cardsPerSecond = 0.12
-
-    const tick = (now) => {
-      const deltaSeconds = Math.min((now - previousTime) / 1000, 0.05)
-      previousTime = now
-
-      const loop = showcaseLoopRef.current
-      if (loop && now >= showcasePauseUntilRef.current && showcasePointerRef.current === null) {
-        carousel.scrollLeft += deltaSeconds * loop.stride * cardsPerSecond
-        normalizeShowcaseScroll(carousel)
-      }
-
-      animationFrameId = window.requestAnimationFrame(tick)
-    }
-
-    animationFrameId = window.requestAnimationFrame(tick)
     return () => {
-      window.cancelAnimationFrame(animationFrameId)
       window.removeEventListener('resize', measureLoop)
     }
   }, [showcaseCards.length])

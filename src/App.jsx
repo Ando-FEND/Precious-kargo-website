@@ -29,10 +29,7 @@ function App() {
 
   const audioRef = useRef(null)
   const presskitTitleRef = useRef(null)
-  const heroSectionRef = useRef(null)
   const presskitSectionRef = useRef(null)
-  const carouselSectionRef = useRef(null)
-  const contactSectionRef = useRef(null)
   const [presskitMediaWidth, setPresskitMediaWidth] = useState(null)
   const showcaseCarouselRef = useRef(null)
   const showcaseDragRef = useRef(null)
@@ -59,24 +56,6 @@ function App() {
     if (!audio) return
 
     audio.muted = true
-  }
-
-  const goToRelativeSection = (step) => {
-    const sections = [heroSectionRef.current, presskitSectionRef.current, carouselSectionRef.current, contactSectionRef.current].filter(Boolean)
-
-    if (sections.length === 0) return
-
-    const marker = window.scrollY + window.innerHeight * 0.35
-    let currentIndex = 0
-
-    sections.forEach((section, index) => {
-      if (section.offsetTop <= marker) {
-        currentIndex = index
-      }
-    })
-
-    const targetIndex = Math.min(sections.length - 1, Math.max(0, currentIndex + step))
-    sections[targetIndex].scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const startShowcaseDrag = (event) => {
@@ -176,9 +155,13 @@ function App() {
     }
 
     syncPresskitWidth()
-    window.addEventListener('resize', syncPresskitWidth)
+    const title = presskitTitleRef.current
+    if (!title) return
 
-    return () => window.removeEventListener('resize', syncPresskitWidth)
+    const resizeObserver = new ResizeObserver(syncPresskitWidth)
+    resizeObserver.observe(title)
+
+    return () => resizeObserver.disconnect()
   }, [])
 
   useEffect(() => {
@@ -288,12 +271,10 @@ function App() {
         <div className="retro-nav-row">
           <button type="button" className="retro-chip" aria-label="Play" onClick={startAudio}>PLAY</button>
           <button type="button" className="retro-chip" aria-label="Stop" onClick={muteAudio}>STOP</button>
-          <button type="button" className="retro-chip" aria-label="Previous" onClick={() => goToRelativeSection(-1)}>PREV</button>
-          <button type="button" className="retro-chip" aria-label="Next" onClick={() => goToRelativeSection(1)}>NEXT</button>
         </div>
       </nav>
       <main className="onepage-layout">
-        <section className="hero-section" ref={heroSectionRef} aria-label="Hero section">
+        <section className="hero-section" aria-label="Hero section">
           <div className="hero-video-bg" aria-hidden="true">
             <video
               className="hero-video"
@@ -321,6 +302,12 @@ function App() {
             <button className="menu-item">
               <img src="/MENU-ITEM.svg" alt="Menu item 3" />
             </button>
+            <button className="menu-item">
+              <img src="/MENU-ITEM.svg" alt="Menu item 4" />
+            </button>
+            <button className="menu-item">
+              <img src="/MENU-ITEM.svg" alt="Menu item 5" />
+            </button>
           </nav>
           <section id="center">
             {/* Din content kommer här */}
@@ -329,10 +316,16 @@ function App() {
             <span className="tagline-line tagline-line-1">Stockholm-based djs</span>
             <span className="tagline-line tagline-line-2">and a creative collective.</span>
           </p>
-          <a className="instagram-link" href="https://www.instagram.com/preciouskargo_" target="_blank" rel="noopener noreferrer" aria-label="Open Precious Kargo on Instagram">
-            <img className="instagram-image" src="/Precious-instagram.svg" alt="Precious Instagram" />
-            <span className="instagram-handle">@Preciouskargo_</span>
-          </a>
+          <div className="hero-social-links">
+            <a className="instagram-link" href="https://www.instagram.com/preciouskargo_" target="_blank" rel="noopener noreferrer" aria-label="Open Precious Kargo on Instagram">
+              <p className="social-link-label">instagram</p>
+              <img className="instagram-image" src="/Insta%20logga%20transparent.PNG" alt="Instagram" />
+            </a>
+            <a className="email-key-link" href="mailto:precious.kargo.p@gmail.com" aria-label="Email Precious Kargo">
+              <p className="social-link-label">mail us</p>
+              <img className="email-key-image" src="/Email%20key.png" alt="Email key" />
+            </a>
+          </div>
         </section>
       <section className="third-section" ref={presskitSectionRef} aria-label="Presskit section">
         <div className="third-layout">
@@ -349,7 +342,7 @@ function App() {
                 aria-label="Presskit image preview"
                 style={presskitImageStyle}
               >
-                <img className="presskit-mini-video" src="/jpeg6.jpeg" alt="Precious presskit preview" loading="lazy" />
+                <img className="presskit-mini-video" src="/P1090348%20(1).jpg" alt="Precious presskit preview" loading="lazy" />
               </div>
             </div>
           </aside>
@@ -358,33 +351,16 @@ function App() {
             style={presskitCopyStyle}
           >
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur gravida justo sed
-              vestibulum varius, ut dictum nisl blandit, in tempor lorem ullamcorper.
+               Precious Kargo is a multidisciplinary creative collective operating at the intersection of music, art, and club culture. As producers and DJs, they create high-energy electronic soundscapes where techno, afro house, and melodic club music merge into a contemporary, genre-blurring sonic identity. Influences from breaks, garage, and underground rave culture are woven together with a dreamy, hypnotic, and rhythm-driven atmosphere shaped by the experimental spirit of Stockholm’s underground scene. Every set evolves into a dynamic experience where music, energy and fun remain at the center.
+
+Beyond music, Precious Kargo's creative practice extends into the production and curation of cultural and club events, as well as styling and sewing. Through these different forms of expression, the collective continues to explore the relationship between sound, visual identity, and community, creating spaces and experiences rooted in collaboration and experimentation. 
+
             </p>
-            <p>
-              Vivamus vel sem non risus volutpat feugiat. Integer ac lorem in eros volutpat facilisis,
-              nec consequat est pulvinar, a ullamcorper justo pretium in.
-            </p>
-            <p>
-              Praesent euismod, nibh at finibus lobortis, urna ipsum pharetra arcu, eget tempor nunc
-              lectus id est, sed tincidunt sapien posuere nec.
-            </p>
-            <p>
-              Suspendisse potenti. Donec eget posuere lectus, non luctus lacus; maecenas in arcu sed
-              ligula iaculis bibendum, vitae efficitur neque vestibulum.
-            </p>
-            <p>
-              Nulla facilisi. In fringilla sapien quis sem tempor, at accumsan diam vulputate; proin
-              malesuada sapien in dui commodo, id pretium lorem pulvinar.
-            </p>
-            <p>
-              Cras interdum, magna non faucibus rhoncus, purus massa mattis lacus, et tempus erat augue
-              et sem, in malesuada ligula sagittis ut.
-            </p>
+
           </div>
         </div>
       </section>
-      <section className="carousel-section" ref={carouselSectionRef} aria-label="Memories section">
+      <section className="carousel-section" aria-label="Memories section">
         <p className="archive-title">PRECIOUS MEMORIES</p>
         <div className="showcase-carousel-wrap">
           <div
@@ -411,7 +387,7 @@ function App() {
           </div>
         </div>
       </section>
-      <section className="fourth-section" ref={contactSectionRef} aria-label="Contact section">
+      <section className="fourth-section" aria-label="Contact section">
         <div className="final-video-bg" aria-hidden="true">
           <video
             className="final-video"

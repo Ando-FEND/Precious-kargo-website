@@ -180,11 +180,12 @@ body::before {
 .third-static-inner h2 {
   margin: 0;
   color: #ffffff;
-  font-family: "Coiny", cursive;
-  font-size: clamp(32px, 4vw, 64px);
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(16px, 2.5vw, 34px);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: 0;
+  white-space: nowrap;
   transition: opacity 260ms ease, transform 260ms ease;
   will-change: opacity, transform;
 }
@@ -675,6 +676,19 @@ body::before {
     padding: 60px 0 20px;
   }
 
+  .third-static-inner h2,
+  .presskit-mini-video-wrap {
+    width: 100% !important;
+  }
+
+  .third-static-inner h2 {
+    text-align: center;
+  }
+
+  .presskit-mini-video-wrap {
+    max-width: none;
+  }
+
   .third-scroll {
     padding: 0 0 60px;
   }
@@ -741,9 +755,17 @@ body::before {
   animation: menuItemFadeIn 300ms ease-out 1260ms forwards;
 }
 
+.menu-item:nth-child(4) {
+  animation: menuItemFadeIn 300ms ease-out 1440ms forwards;
+}
+
+.menu-item:nth-child(5) {
+  animation: menuItemFadeIn 300ms ease-out 1620ms forwards;
+}
+
 .menu-item img {
   display: block;
-  width: 48px;
+  width: 24px;
   height: auto;
 }
 
@@ -780,6 +802,23 @@ body::before {
   opacity: 0;
   transform: translateY(18px);
   animation: instagramFadeUp 320ms ease-out 1320ms forwards;
+}
+
+.hero-social-links {
+  display: contents;
+}
+
+.email-key-link {
+  display: none;
+}
+
+.social-link-label {
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(10px, 1.15vw, 16px);
+  line-height: 1.4;
+  text-align: center;
 }
 
 .instagram-image {
@@ -820,13 +859,62 @@ body::before {
 }
 
 @media (max-width: 640px) {
-  .instagram-link {
-    display: none;
+  .menu-container {
+    top: calc(79px + 24.38vw);
   }
+
+  .hero-social-links {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 158px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .instagram-link {
+    position: static;
+    width: 50%;
+    gap: 6px;
+  }
+
+  .instagram-image,
+  .email-key-image {
+    width: min(100%, 270px);
+    height: 202.5px;
+    object-fit: contain;
+  }
+
+  .email-key-image {
+    width: min(100%, 270px);
+    height: 198px;
+    margin-top: 15px;
+  }
+
+  .email-key-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50%;
+    gap: 6px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .social-link-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 17px;
+    line-height: 1.4;
+    text-align: center;
+    transform: translateY(40px);
+  }
+
   .bottom-left-tagline {
     left: 14px;
     bottom: 14px;
     max-width: calc(100vw - 28px);
+    font-size: 15px;
   }
 }
 

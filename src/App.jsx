@@ -28,7 +28,7 @@ function App() {
 
   const startAudio = () => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || document.hidden) return
 
     audio.muted = false
     audio.volume = 1
@@ -98,19 +98,27 @@ function App() {
   }
 
   useEffect(() => {
+    const audio = audioRef.current
     startAudio()
 
     const unlockAudio = () => startAudio()
+    const pauseAudioWhenHidden = () => {
+      if (document.hidden) audio?.pause()
+    }
+
     window.addEventListener('pointerdown', unlockAudio, { once: true })
     window.addEventListener('touchstart', unlockAudio, { once: true })
     window.addEventListener('keydown', unlockAudio, { once: true })
-    window.addEventListener('visibilitychange', unlockAudio)
+    document.addEventListener('visibilitychange', pauseAudioWhenHidden)
+    window.addEventListener('pagehide', pauseAudioWhenHidden)
 
     return () => {
       window.removeEventListener('pointerdown', unlockAudio)
       window.removeEventListener('touchstart', unlockAudio)
       window.removeEventListener('keydown', unlockAudio)
-      window.removeEventListener('visibilitychange', unlockAudio)
+      document.removeEventListener('visibilitychange', pauseAudioWhenHidden)
+      window.removeEventListener('pagehide', pauseAudioWhenHidden)
+      audio?.pause()
     }
   }, [])
 

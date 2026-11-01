@@ -501,6 +501,7 @@ body::before {
   .showcase-carousel {
     height: clamp(360px, 88vw, 620px);
     --showcase-card-width: clamp(210px, 72vw, 360px);
+    scroll-snap-type: x proximity;
   }
 
   .final-section-inner {

@@ -21,8 +21,8 @@ function App() {
   const audioRef = useRef(null)
   const presskitSectionRef = useRef(null)
   const showcaseCarouselRef = useRef(null)
+  const showcaseLoopWidthRef = useRef(0)
   const showcaseDragRef = useRef(null)
-  const showcaseLoopRef = useRef(null)
   const suppressShowcaseClickRef = useRef(false)
   const [presskitSectionReveal, setPresskitSectionReveal] = useState(0)
 
@@ -81,13 +81,14 @@ function App() {
   }
 
   const normalizeShowcaseScroll = (carousel) => {
-    const loop = showcaseLoopRef.current
-    if (!loop) return
+    const loopWidth = showcaseLoopWidthRef.current
+    if (!loopWidth) return
 
-    let scrollLeft = carousel.scrollLeft
-    while (scrollLeft < loop.start) scrollLeft += loop.width
-    while (scrollLeft >= loop.end) scrollLeft -= loop.width
-    if (scrollLeft !== carousel.scrollLeft) carousel.scrollLeft = scrollLeft
+    const offset = carousel.scrollLeft - loopWidth
+    if (offset < -loopWidth / 2 || offset >= loopWidth / 2) {
+      const normalizedOffset = ((offset + loopWidth / 2) % loopWidth + loopWidth) % loopWidth - loopWidth / 2
+      carousel.scrollLeft = loopWidth + normalizedOffset
+    }
   }
 
   const handleShowcaseWheel = (event) => {
@@ -145,17 +146,15 @@ function App() {
 
       const styles = window.getComputedStyle(carousel)
       const gap = Number.parseFloat(styles.columnGap) || 0
-      const paddingLeft = Number.parseFloat(styles.paddingLeft) || 0
       const cardWidth = firstCard.getBoundingClientRect().width
-      const width = (cardWidth + gap) * showcaseCards.length
-      const previousLoop = showcaseLoopRef.current
-      const progress = previousLoop
-        ? ((carousel.scrollLeft - previousLoop.start) % previousLoop.width + previousLoop.width) % previousLoop.width
+      const previousLoopWidth = showcaseLoopWidthRef.current
+      const progress = previousLoopWidth
+        ? (carousel.scrollLeft - previousLoopWidth) / previousLoopWidth
         : 0
-      const start = paddingLeft + width
+      const loopWidth = (cardWidth + gap) * showcaseCards.length
 
-      showcaseLoopRef.current = { start, end: start + width, width }
-      carousel.scrollLeft = start + (previousLoop ? (progress / previousLoop.width) * width : 0)
+      showcaseLoopWidthRef.current = loopWidth
+      carousel.scrollLeft = loopWidth * (1 + progress)
     }
 
     measureLoop()
@@ -309,7 +308,7 @@ function App() {
             onScroll={(event) => normalizeShowcaseScroll(event.currentTarget)}
             onWheel={handleShowcaseWheel}
           >
-            {Array.from({ length: 3 }, (_, copyIndex) =>
+            {Array.from({ length: 2 }, (_, copyIndex) =>
               showcaseCards.map((card) => (
                 <a
                   className="showcase-card"
@@ -317,11 +316,11 @@ function App() {
                   href="https://www.instagram.com/preciouskargo_"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={copyIndex === 1 ? `View ${card.alt} on Instagram` : undefined}
-                  aria-hidden={copyIndex !== 1}
-                  tabIndex={copyIndex === 1 ? 0 : -1}
+                  aria-label={copyIndex === 0 ? `View ${card.alt} on Instagram` : undefined}
+                  aria-hidden={copyIndex !== 0}
+                  tabIndex={copyIndex === 0 ? 0 : -1}
                 >
-                  <img className="showcase-image" src={card.image} alt={copyIndex === 1 ? card.alt : ''} loading="lazy" draggable="false" />
+                  <img className="showcase-image" src={card.image} alt={copyIndex === 0 ? card.alt : ''} loading="lazy" decoding="async" draggable="false" />
                 </a>
               )),
             )}
